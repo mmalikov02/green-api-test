@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GREEN-API Тест</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: auto;
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            width: 80%;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #218838;
+        }
+        textarea {
+            width: 90%;
+            height: 150px;
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        async function callApi(endpoint) {
+            const idInstance = document.getElementById('idInstance').value;
+            const apiToken = document.getElementById('apiToken').value;
+            const responseField = document.getElementById('response');
+
+            if (!idInstance || !apiToken) {
+                alert("Введите idInstance и ApiTokenInstance");
+                return;
+            }
+
+            let url = `https://api.green-api.com/waInstance${idInstance}/${endpoint}/${apiToken}`;
+
+            let body = {};
+            if (endpoint === 'sendMessage') {
+                body = {
+                    chatId: document.getElementById('chatId').value,
+                    message: document.getElementById('message').value
+                };
+            }
+
+            const options = endpoint === 'sendMessage' ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {};
+
+            try {
+                const response = await fetch(url, options);
+                const text = await response.text(); // Получаем ответ как текст
+                const data = text ? JSON.parse(text) : { error: "Пустой ответ от сервера" };
+                responseField.value = JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseField.value = `Ошибка: ${error.message}`;
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Тестирование GREEN-API</h1>
+        <label>idInstance:<br> <input type="text" id="idInstance"></label><br>
+        <label>ApiTokenInstance:<br> <input type="text" id="apiToken"></label><br>
+        <button onclick="callApi('getSettings')">getSettings</button>
+        <button onclick="callApi('getStateInstance')">getStateInstance</button>
+        <h2>Отправка сообщений</h2>
+        <label>Chat ID:<br> <input type="text" id="chatId" placeholder="79991234567@c.us"></label><br>
+        <label>Сообщение:<br> <input type="text" id="message"></label><br>
+        <button onclick="callApi('sendMessage')">sendMessage</button>
+        <h2>Ответ API:</h2>
+        <textarea id="response" readonly></textarea>
+    </div>
+</body>
+</html>
